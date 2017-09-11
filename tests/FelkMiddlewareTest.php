@@ -72,7 +72,6 @@ class FelkMiddlewareTest extends ApplicationTestCase
 	 */
 	protected function getEnvironmentSetUp($app)
 	{
-		// Setup default database to use sqlite :memory:
 		$app['config']->set('felk', [
 			'elastic_search_hosts' => ['https://felk.com:443'],
 			'enabled_environments' => [
