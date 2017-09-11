@@ -1,0 +1,34 @@
+{
+	"name": "fuzz/felk-php",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Fuzz Web",
+			"email": "web@fuzzproductions.com"
+		}
+	],
+	"require": {
+		"php": ">=7.0",
+		"nesbot/carbon": "~1.18",
+		"laravel/framework": "<=5.5",
+		"elasticsearch/elasticsearch": "~5.0"
+	},
+	"require-dev": {
+		"mockery/mockery": "0.9.*",
+		"phpunit/phpunit": "~5.6",
+		"barryvdh/laravel-ide-helper": "^2.3",
+		"scriptfusion/phpunit-immediate-exception-printer": "^1",
+		"orchestra/testbench": "3.3.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Fuzz\\Felk\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Fuzz\\Felk\\Tests\\": "tests/"
+		}
+	}
+}
