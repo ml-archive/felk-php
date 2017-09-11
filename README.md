@@ -1,5 +1,7 @@
-Fuzz Felk for PHP/Laravel
+Felk for PHP/Laravel
 =========================
+FELK is a helper library which can take data from a Laravel request/response and push it to a store (currently ElasticSearch, hence Fuzz [ELK](https://www.elastic.co/webinars/introduction-elk-stack)). It is intended to only be used in development environments to debug and run analytics on API requests/responses. 
+
 
 ## Installation
 ```bash
