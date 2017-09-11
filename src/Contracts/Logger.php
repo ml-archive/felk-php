@@ -2,6 +2,13 @@
 
 namespace Fuzz\Felk\Contracts;
 
+/**
+ * Interface Logger
+ *
+ * A Logger accepts a LoggableEvent and writes it to its store
+ *
+ * @package Fuzz\Felk\Contracts
+ */
 interface Logger
 {
 	/**

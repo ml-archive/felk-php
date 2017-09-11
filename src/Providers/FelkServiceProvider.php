@@ -2,7 +2,6 @@
 
 namespace Fuzz\Felk\Providers;
 
-use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use Fuzz\Felk\Contracts\Logger;
