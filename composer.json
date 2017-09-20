@@ -11,7 +11,7 @@
 	"require": {
 		"php": ">=7.0",
 		"nesbot/carbon": "~1.18",
-		"laravel/framework": "5.1 || 5.2 || 5.3 || 5.4 || 5.5",
+		"laravel/framework": "^5.1.0",
 		"elasticsearch/elasticsearch": "~5.0"
 	},
 	"require-dev": {
