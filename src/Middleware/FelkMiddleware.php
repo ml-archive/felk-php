@@ -61,7 +61,7 @@ class FelkMiddleware
 	{
 		$config = config('felk');
 
-		if (! App::environment($config['enabled_environments'])) {
+		if (! App::environment($config['enabled_environments']) || $request->header('User-Agent') === 'ELB-HealthChecker 1.0') {
 			return false;
 		}
 
