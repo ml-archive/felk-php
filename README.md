@@ -40,3 +40,27 @@ $ composer require fuzz/felk-php
     ];
     ```
 1. Check ElasticSearch.
+
+
+### AWS Elasticsearch
+
+When using AWS Elasticsearch service, make sure the role associated with any EC2 instance attempting to connect to Elasticsearch has an IAM Policy similar to the one below:
+
+
+```json
+ {
+     "Version": "2012-10-17",
+     "Statement": [
+         {
+             "Sid": "Stmt1505933298000",
+             "Effect": "Allow",
+             "Action": [
+                 "es:*"
+             ],
+             "Resource": [
+                 "arn:aws:es:REGION:ACCOUNT-ID:domain/DOMAIN-NAME/*"
+             ]
+         }
+     ]
+ }
+```
