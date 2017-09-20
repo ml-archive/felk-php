@@ -30,10 +30,6 @@ class FelkServiceProvider extends ServiceProvider
 	{
 		$config = config('felk');
 
-		if (! App::environment($config['enabled_environments'])) {
-			return;
-		}
-
 		$this->app->singleton(Logger::class, function() use ($config) {
 			return ElasticSearchLogger::factory(
 				$config['elastic_search_hosts'],
