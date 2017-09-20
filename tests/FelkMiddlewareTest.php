@@ -2,6 +2,7 @@
 
 namespace Fuzz\Felk\Tests;
 
+use Fuzz\Felk\Engines\ElasticSearchEngine;
 use Fuzz\Felk\Logging\APIRequestEvent;
 use Fuzz\Felk\Logging\ElasticSearchLogger;
 use Fuzz\Felk\Middleware\FelkMiddleware;
@@ -17,7 +18,7 @@ class FelkMiddlewareTest extends ApplicationTestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$logger   = Mockery::mock(ElasticSearchLogger::class);
+		$logger   = Mockery::mock(ElasticSearchEngine::class);
 
 		$middleware = new FelkMiddleware($logger);
 
@@ -32,7 +33,7 @@ class FelkMiddlewareTest extends ApplicationTestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$logger   = Mockery::mock(ElasticSearchLogger::class);
+		$logger   = Mockery::mock(ElasticSearchEngine::class);
 
 		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;

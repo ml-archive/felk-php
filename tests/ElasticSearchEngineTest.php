@@ -3,18 +3,19 @@
 namespace Fuzz\Felk\Tests;
 
 use Elasticsearch\Client;
+use Fuzz\Felk\Engines\ElasticSearchEngine;
 use Fuzz\Felk\Logging\APIRequestEvent;
 use Fuzz\Felk\Logging\ElasticSearchLogger;
 use Mockery;
 use PHPUnit_Framework_TestCase;
 
-class ElasticSearchLoggerTest extends TestCase
+class ElasticSearchEngineTest extends TestCase
 {
 	public function testItCanWriteToLogger()
 	{
 		$client = Mockery::mock(Client::class);
 
-		$logger = new ElasticSearchLogger($client, 'FooApp');
+		$logger = new ElasticSearchEngine($client, 'FooApp');
 
 		$event = Mockery::mock(APIRequestEvent::class);
 		$body = [

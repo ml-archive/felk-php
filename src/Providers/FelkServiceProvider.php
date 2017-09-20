@@ -27,8 +27,18 @@ class FelkServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->app->singleton(Logger::class, function($app) {
+		$this->app->singleton(FelkEngineManager::class, function($app) {
 			return new FelkEngineManager($app);
+		});
+
+		$this->app->singleton(Logger::class, function($app) {
+			// First, we will create the Felk manager which is responsible for the
+			// creation of the various felk drivers when they are needed by the
+			// application instance, and will resolve them on a lazy load basis.
+			/** @var FelkEngineManager $manager */
+			$manager = $app[FelkEngineManager::class];
+
+			return $manager->driver();
 		});
 	}
 }

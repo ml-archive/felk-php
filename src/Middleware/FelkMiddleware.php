@@ -5,6 +5,7 @@ namespace Fuzz\Felk\Middleware;
 use Closure;
 use Fuzz\Felk\Contracts\Logger;
 use Fuzz\Felk\Logging\APIRequestEvent;
+use Fuzz\Felk\Providers\FelkEngineManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +29,7 @@ class FelkMiddleware
 	/**
 	 * FelkMiddleware constructor.
 	 *
-	 * @param \Fuzz\Felk\Contracts\Logger $logger
+	 * @param Logger $logger
 	 */
 	public function __construct(Logger $logger)
 	{
