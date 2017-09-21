@@ -20,6 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
 class FelkMiddleware
 {
 	/**
+	 * String identifying the AWS ELB health checker user agent.
+	 */
+	const ELB_HEALTH_CHECKER_AGENT = 'ELB-HealthChecker/1.0';
+
+	/**
 	 * Logger storage
 	 *
 	 * @var \Fuzz\Felk\Contracts\Logger
@@ -61,7 +66,7 @@ class FelkMiddleware
 	{
 		$config = config('felk');
 
-		if (! App::environment($config['enabled_environments']) || $request->header('User-Agent') === 'ELB-HealthChecker/1.0') {
+		if (! App::environment($config['enabled_environments']) || $request->header('User-Agent') === self::ELB_HEALTH_CHECKER_AGENT) {
 			return false;
 		}
 

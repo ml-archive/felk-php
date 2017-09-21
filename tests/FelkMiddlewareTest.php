@@ -42,6 +42,7 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'req_baz' => ['bat'],
 		]);
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
@@ -63,6 +64,24 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 		putenv('APP_ENV');
 	}
+
+	public function testItChecksUserAgentForHealthCheckerBeforeAttemptingToRun()
+	{
+		$request  = Mockery::mock(Request::class);
+		$response = Mockery::mock(Response::class);
+		$logger   = Mockery::mock(ElasticSearchEngine::class);
+
+		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn(FelkMiddleware::ELB_HEALTH_CHECKER_AGENT);
+
+		$middleware = new FelkMiddleware($logger);
+
+		App::shouldReceive('environment')->with(['local', 'dev', 'staging'])->once()->andReturn(true);
+
+		$this->assertFalse($middleware->terminate($request, $response));
+
+		putenv('APP_ENV');
+	}
+
 
 	/**
 	 * Define environment setup.

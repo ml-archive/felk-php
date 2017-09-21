@@ -1,6 +1,7 @@
 {
 	"name": "fuzz/felk-php",
 	"type": "library",
+	"description": "A module that assists with logging all requests and responses.",
 	"license": "MIT",
 	"authors": [
 		{
@@ -31,5 +32,16 @@
 		"psr-4": {
 			"Fuzz\\Felk\\Tests\\": "tests/"
 		}
+	},
+	"scripts": {
+		"test": [
+			"vendor/bin/phpunit"
+		],
+		"test-coverage": [
+			"vendor/bin/phpunit --coverage-html tests/coverage"
+		],
+		"open-coverage": [
+			"open -a \"Google Chrome\" tests/coverage/index.html"
+		]
 	}
 }
