@@ -64,16 +64,20 @@ class FelkMiddleware
 	 */
 	public function terminate(Request $request, Response $response): bool
 	{
-		$config = config('felk');
+		try {
+			$config = config('felk');
 
-		if (! App::environment($config['enabled_environments']) || $request->header('User-Agent') === self::ELB_HEALTH_CHECKER_AGENT) {
+			if (! App::environment($config['enabled_environments']) || $request->header('User-Agent') === self::ELB_HEALTH_CHECKER_AGENT) {
+				return false;
+			}
+
+			$event = APIRequestEvent::factory($request, $response, time());
+
+			$this->logger->write($event);
+
+			return true;
+		} catch (\Exception $err) {
 			return false;
 		}
-
-		$event = APIRequestEvent::factory($request, $response, time());
-
-		$this->logger->write($event);
-
-		return true;
 	}
 }
