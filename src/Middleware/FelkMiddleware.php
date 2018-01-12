@@ -71,7 +71,11 @@ class FelkMiddleware
 		// 		middleware called will result in a more accurate response time estimate. By necessity this terminate
 		//		method is called AFTER the response is written and will always be slightly longer than the actual
 		//		response time.
-		$response_time_ms = round((microtime(true) - LARAVEL_START) * 1000);
+		$response_time_ms = 0;
+
+		if (defined('LARAVEL_START')) {
+			$response_time_ms = round((microtime(true) - LARAVEL_START) * 1000);
+		}
 
 		try {
 			$config = config('felk');

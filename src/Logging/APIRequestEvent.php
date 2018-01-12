@@ -71,11 +71,12 @@ class APIRequestEvent implements LoggableEvent
 	 *
 	 * @param \Illuminate\Http\Request                   $request
 	 * @param \Symfony\Component\HttpFoundation\Response $response
+	 * @param int                                        $response_time_ms
 	 * @param int|null                                   $time
 	 *
 	 * @return \Fuzz\Felk\Logging\APIRequestEvent
 	 */
-	public static function factory(Request $request, Response $response, int $response_time_ms, int $time = null): APIRequestEvent
+	public static function factory(Request $request, Response $response, int $response_time_ms = 0, int $time = null): APIRequestEvent
 	{
 		$event = new self;
 
