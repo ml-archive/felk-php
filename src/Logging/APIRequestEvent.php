@@ -36,6 +36,13 @@ class APIRequestEvent implements LoggableEvent
 	private $status_code;
 
 	/**
+	 * Response time in milliseconds
+	 *
+	 * @var int
+	 */
+	private $response_time_ms;
+
+	/**
 	 * Headers storage
 	 *
 	 * @var array
@@ -68,13 +75,14 @@ class APIRequestEvent implements LoggableEvent
 	 *
 	 * @return \Fuzz\Felk\Logging\APIRequestEvent
 	 */
-	public static function factory(Request $request, Response $response, int $time = null): APIRequestEvent
+	public static function factory(Request $request, Response $response, int $response_time_ms, int $time = null): APIRequestEvent
 	{
 		$event = new self;
 
 		return $event->setRequest($request)
 			->setResponse($response)
-			->setTime(is_null($time) ? time() : $time);
+			->setTime(is_null($time) ? time() : $time)
+			->setResponseTime($response_time_ms);
 	}
 
 	/**
@@ -234,6 +242,30 @@ class APIRequestEvent implements LoggableEvent
 	}
 
 	/**
+	 * Set the response time
+	 *
+	 * @param int $response_time_ms
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setResponseTime(int $response_time_ms): APIRequestEvent
+	{
+		$this->response_time_ms = $response_time_ms;
+
+		return $this;
+	}
+
+	/**
+	 * Get the response time
+	 *
+	 * @return int
+	 */
+	public function getResponseTime(): int
+	{
+		return $this->response_time_ms;
+	}
+
+	/**
 	 * Get the instance as an array.
 	 *
 	 * @return array
@@ -241,19 +273,20 @@ class APIRequestEvent implements LoggableEvent
 	public function toArray()
 	{
 		return [
-			'timestamp'        => $this->getTime()->toIso8601String(),
-			'method'           => $this->getRequest()->method(),
-			'host'             => $this->getRequest()->getHttpHost(),
-			'route'            => $this->getRoute(),
-			'status_code'      => $this->getStatusCode(),
-			'request_headers'  => json_encode($this->getRequestHeaders()),
-			'request_body'     => $this->getRequest()->getContent(),
-			'response_headers' => json_encode($this->getResponseHeaders()),
-			'response_body'    => $this->getResponse()->getContent(),
-			'ip'               => $this->getRequest()->ip(),
-			'scheme'           => $this->getRequest()->getScheme(),
-			'port'             => $this->getRequest()->getPort(),
-			'environment'      => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
+			'timestamp'                  => $this->getTime()->toIso8601String(),
+			'method'                     => $this->getRequest()->method(),
+			'host'                       => $this->getRequest()->getHttpHost(),
+			'route'                      => $this->getRoute(),
+			'status_code'                => $this->getStatusCode(),
+			'request_headers'            => json_encode($this->getRequestHeaders()),
+			'request_body'               => $this->getRequest()->getContent(),
+			'response_headers'           => json_encode($this->getResponseHeaders()),
+			'response_body'              => $this->getResponse()->getContent(),
+			'ip'                         => $this->getRequest()->ip(),
+			'scheme'                     => $this->getRequest()->getScheme(),
+			'port'                       => $this->getRequest()->getPort(),
+			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
+			'response_time_milliseconds' => $this->getResponseTime(),
 		];
 	}
 

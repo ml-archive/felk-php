@@ -34,12 +34,12 @@ class APIRequestEventTest extends TestCase
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
-		$event = APIRequestEvent::factory($request, $response, $time);
+		$event = APIRequestEvent::factory($request, $response, 230, $time);
 
 		$this->assertSame($request, $event->getRequest());
 		$this->assertSame($response, $event->getResponse());
 		$this->assertSame($time, $event->getTimestamp());
-		$this->assertSame($time, $event->getTime()->timestamp);
+		$this->assertSame(230, $event->getResponseTime());
 	}
 
 	public function testTimestampDefaultsToNow()
@@ -64,7 +64,7 @@ class APIRequestEventTest extends TestCase
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
-		$event = APIRequestEvent::factory($request, $response);
+		$event = APIRequestEvent::factory($request, $response, 200);
 
 		$now = time();
 
@@ -93,7 +93,7 @@ class APIRequestEventTest extends TestCase
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
-		$event = APIRequestEvent::factory($request, $response, $time);
+		$event = APIRequestEvent::factory($request, $response, 250, $time);
 
 		$request->shouldReceive('method')->once()->andReturn('GET');
 		$request->shouldReceive('getHttpHost')->once()->andReturn('https://felk.com');
@@ -125,6 +125,7 @@ class APIRequestEventTest extends TestCase
 			'scheme'           => 'https',
 			'port'             => '80',
 			'environment'      => 'some_cool_test_env',
+			'response_time_milliseconds' => 250,
 		];
 
 		$this->assertSame($expect, $event->toArray());
@@ -155,7 +156,7 @@ class APIRequestEventTest extends TestCase
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
-		$event = APIRequestEvent::factory($request, $response, $time);
+		$event = APIRequestEvent::factory($request, $response, 270, $time);
 
 		$request->shouldReceive('method')->once()->andReturn('GET');
 		$request->shouldReceive('getHttpHost')->once()->andReturn('https://felk.com');
@@ -187,6 +188,7 @@ class APIRequestEventTest extends TestCase
 			'scheme'           => 'https',
 			'port'             => '80',
 			'environment'      => 'some_cool_test_env',
+			'response_time_milliseconds' => 270,
 		]);
 
 		$this->assertSame($expect, $event->toJson());

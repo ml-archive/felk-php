@@ -16,6 +16,10 @@ class FelkMiddlewareTest extends ApplicationTestCase
 {
 	public function testItChecksAppEnvironmentBeforeAttemptingToRun()
 	{
+		if (! defined('LARAVEL_START')) {
+			define('LARAVEL_START', microtime(true));
+		}
+
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
 		$logger   = Mockery::mock(ElasticSearchEngine::class);
@@ -31,6 +35,10 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 	public function testItWritesEventToLogger()
 	{
+		if (! defined('LARAVEL_START')) {
+			define('LARAVEL_START', microtime(true));
+		}
+
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
 		$logger   = Mockery::mock(ElasticSearchEngine::class);
@@ -67,6 +75,10 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 	public function testItChecksUserAgentForHealthCheckerBeforeAttemptingToRun()
 	{
+		if (! defined('LARAVEL_START')) {
+			define('LARAVEL_START', microtime(true));
+		}
+
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
 		$logger   = Mockery::mock(ElasticSearchEngine::class);

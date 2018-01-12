@@ -60,5 +60,5 @@ return [
 	|
 	*/
 
-	'prefix' => env('APP_NAME'),
+	'prefix' => env('APP_NAME', 'define_my_felk_app_name'),
 ];
