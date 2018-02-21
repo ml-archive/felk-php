@@ -5,7 +5,6 @@ namespace Fuzz\Felk\Middleware;
 use Closure;
 use Fuzz\Felk\Contracts\Logger;
 use Fuzz\Felk\Logging\APIRequestEvent;
-use Fuzz\Felk\Providers\FelkEngineManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +22,7 @@ class FelkMiddleware
 	 * String identifying the AWS ELB health checker user agent.
 	 */
 	const ELB_HEALTH_CHECKER_AGENT = 'ELB-HealthChecker/1.0';
+	const REQUEST_ID_HEADER        = 'X-Request-Id';
 
 	/**
 	 * Logger storage
@@ -77,6 +77,9 @@ class FelkMiddleware
 			$response_time_ms = round((microtime(true) - LARAVEL_START) * 1000);
 		}
 
+		$request_id = $response->headers->has(self::REQUEST_ID_HEADER) ?
+			$response->headers->get(self::REQUEST_ID_HEADER) : null;
+
 		try {
 			$config = config('felk');
 
@@ -84,7 +87,7 @@ class FelkMiddleware
 				return false;
 			}
 
-			$event = APIRequestEvent::factory($request, $response, $response_time_ms, time());
+			$event = APIRequestEvent::factory($request, $response, $response_time_ms, time(), $request_id);
 
 			$this->logger->write($event);
 

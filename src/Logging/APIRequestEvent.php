@@ -67,23 +67,37 @@ class APIRequestEvent implements LoggableEvent
 	private $timestamp;
 
 	/**
+	 * Request ID storage
+	 *
+	 * @var string|null
+	 */
+	private $request_id = null;
+
+	/**
 	 * Build a new APIRequestEvent
 	 *
 	 * @param \Illuminate\Http\Request                   $request
 	 * @param \Symfony\Component\HttpFoundation\Response $response
 	 * @param int                                        $response_time_ms
 	 * @param int|null                                   $time
+	 * @param string                                     $request_id
 	 *
 	 * @return \Fuzz\Felk\Logging\APIRequestEvent
 	 */
-	public static function factory(Request $request, Response $response, int $response_time_ms = 0, int $time = null): APIRequestEvent
+	public static function factory(Request $request, Response $response, int $response_time_ms = 0, int $time = null, string $request_id = null): APIRequestEvent
 	{
 		$event = new self;
 
-		return $event->setRequest($request)
+		$event = $event->setRequest($request)
 			->setResponse($response)
 			->setTime(is_null($time) ? time() : $time)
 			->setResponseTime($response_time_ms);
+
+		if (! is_null($request_id)) {
+			$event->setRequestId($request_id);
+		}
+
+		return $event;
 	}
 
 	/**
@@ -160,6 +174,30 @@ class APIRequestEvent implements LoggableEvent
 	public function setRoute(string $route): APIRequestEvent
 	{
 		$this->route = $route;
+
+		return $this;
+	}
+
+	/**
+	 * Get the RequestID
+	 *
+	 * @return string
+	 */
+	public function getRequestId(): string
+	{
+		return $this->request_id;
+	}
+
+	/**
+	 * Set the RequestID
+	 *
+	 * @param string $request_id
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setRequestId(string $request_id): APIRequestEvent
+	{
+		$this->request_id = $request_id;
 
 		return $this;
 	}
@@ -310,6 +348,6 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getUniqueId(): string
 	{
-		return hash('sha256', $this->getRoute() . round(microtime(true) * 1000));
+		return is_null($this->request_id) ? hash('sha256', $this->getRoute() . round(microtime(true) * 1000)) : $this->request_id;
 	}
 }
