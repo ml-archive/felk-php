@@ -47,10 +47,11 @@ class NullEngine implements Logger
 	 * Log an event to the store
 	 *
 	 * @param \Fuzz\Felk\Contracts\LoggableEvent $event
+	 * @param bool                               $force_safe
 	 *
 	 * @return array
 	 */
-	public function write(LoggableEvent $event): array
+	public function write(LoggableEvent $event, bool $force_safe = true): array
 	{
 		return [];
 	}

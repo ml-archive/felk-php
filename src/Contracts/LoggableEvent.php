@@ -27,4 +27,11 @@ interface LoggableEvent extends Jsonable, Arrayable
 	 * @return string
 	 */
 	public function getUniqueId(): string;
+
+	/**
+	 * Get the instance as a safe array with sensitive data removed
+	 *
+	 * @return array
+	 */
+	public function toSafeArray(): array;
 }

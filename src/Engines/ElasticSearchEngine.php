@@ -68,16 +68,17 @@ class ElasticSearchEngine implements Logger
 	 * Log an event to the store
 	 *
 	 * @param \Fuzz\Felk\Contracts\LoggableEvent $event
+	 * @param bool                               $force_safe
 	 *
 	 * @return array
 	 */
-	public function write(LoggableEvent $event): array
+	public function write(LoggableEvent $event, bool $force_safe = true): array
 	{
 		$response = $this->es->index([
 			'index' => $this->index(),
 			'type'  => self::TYPE,
 			'id'    => $event->getUniqueId(),
-			'body'  => $event->toArray(),
+			'body'  => $force_safe ? $event->toSafeArray() : $event->toArray(),
 		]);
 
 		return $response;

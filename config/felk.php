@@ -14,7 +14,20 @@ return [
 	|
 	*/
 
-	'driver'        => env('FELK_DRIVER', 'elasticsearch'),
+	'driver' => env('FELK_DRIVER', 'null_engine'),
+
+	/*
+	|--------------------------------------------------------------------------
+	| Safe Mode
+	|--------------------------------------------------------------------------
+	|
+	| This option forces felk to ignore attributes which might contain PII
+	| or other sensitive data such as the request and response while still
+	| logging other attributes.
+	|
+	*/
+
+	'force_safe'    => env('FELK_FORCE_SAFE', true),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -25,7 +38,8 @@ return [
 	|
 	*/
 	'elasticsearch' => [
-		'region' => env('AWS_ELASTICSEARCH_REGION', 'us-east-1'), // Only needed when using aws-elasticsearch provider.
+		'region' => env('AWS_ELASTICSEARCH_REGION', 'us-east-1'),
+		// Only needed when using aws-elasticsearch provider.
 		'config' => [
 			'hosts' => [
 				[
@@ -47,7 +61,11 @@ return [
 	| All environments where bib should be enabled
 	*/
 
-	'enabled_environments' => ['local', 'dev', 'staging'],
+	'enabled_environments' => [
+		'local',
+		'dev',
+		'staging',
+	],
 
 	/*
 	|--------------------------------------------------------------------------

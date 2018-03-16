@@ -350,4 +350,28 @@ class APIRequestEvent implements LoggableEvent
 	{
 		return is_null($this->request_id) ? hash('sha256', $this->getRoute() . round(microtime(true) * 1000)) : $this->request_id;
 	}
+
+	/**
+	 * Get the instance as a safe array with sensitive data removed
+	 *
+	 * @return array
+	 */
+	public function toSafeArray(): array
+	{
+		// We ignore the request/response to avoid having to redact potential PII
+		return [
+			'timestamp'                  => $this->getTime()->toIso8601String(),
+			'method'                     => $this->getRequest()->method(),
+			'host'                       => $this->getRequest()->getHttpHost(),
+			'route'                      => $this->getRoute(),
+			'status_code'                => $this->getStatusCode(),
+			'request_headers'            => json_encode($this->getRequestHeaders()),
+			'response_headers'           => json_encode($this->getResponseHeaders()),
+			'ip'                         => $this->getRequest()->ip(),
+			'scheme'                     => $this->getRequest()->getScheme(),
+			'port'                       => $this->getRequest()->getPort(),
+			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
+			'response_time_milliseconds' => $this->getResponseTime(),
+		];
+	}
 }

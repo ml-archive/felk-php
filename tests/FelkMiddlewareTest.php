@@ -20,18 +20,22 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			define('LARAVEL_START', microtime(true));
 		}
 
-		$request  = Mockery::mock(Request::class);
-		$response = Mockery::mock(Response::class);
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$request           = Mockery::mock(Request::class);
+		$response          = Mockery::mock(Response::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 
 		$response_headers->shouldReceive('has')->with('X-Request-Id')->once()->andReturn(false);
 
-		$logger   = Mockery::mock(ElasticSearchEngine::class);
+		$logger = Mockery::mock(ElasticSearchEngine::class);
 
 		$middleware = new FelkMiddleware($logger);
 
-		App::shouldReceive('environment')->with(['local', 'dev', 'staging'])->once()->andReturn(false);
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(false);
 
 		$logger->shouldReceive('write')->never();
 
@@ -68,11 +72,128 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 		$middleware = new FelkMiddleware($logger);
 
-		App::shouldReceive('environment')->with(['local', 'dev', 'staging'])->once()->andReturn(true);
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(true);
 
 		$logger->shouldReceive('write')->with(Mockery::on(function ($arg) {
 			return $arg instanceof APIRequestEvent;
-		}))->once();
+		}), true)->once();
+
+		$this->assertTrue($middleware->terminate($request, $response));
+
+		putenv('APP_ENV');
+	}
+
+	public function testItWritesEventToLoggerWithForceSafeByDefault()
+	{
+		if (! defined('LARAVEL_START')) {
+			define('LARAVEL_START', microtime(true));
+		}
+
+		// Ignore force_safe
+		$this->app['config']->set('felk', [
+			'elastic_search_hosts' => ['https://felk.com:443'],
+			'enabled_environments' => [
+				'local',
+				'dev',
+				'staging',
+			],
+			'app_name'             => 'FooApp',
+		]);
+
+		$request  = Mockery::mock(Request::class);
+		$response = Mockery::mock(Response::class);
+		$logger   = Mockery::mock(ElasticSearchEngine::class);
+
+		$request_headers  = Mockery::mock(HeaderBag::class);
+		$request->headers = $request_headers;
+		$request_headers->shouldReceive('all')->once()->andReturn([
+			'req_foo' => ['bar'],
+			'req_baz' => ['bat'],
+		]);
+		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
+
+		$response_headers  = Mockery::mock(HeaderBag::class);
+		$response->headers = $response_headers;
+		$response_headers->shouldReceive('all')->once()->andReturn([
+			'res_foo' => ['bar'],
+			'res_baz' => ['bat'],
+		]);
+		$response_headers->shouldReceive('has')->with('X-Request-Id')->once()->andReturn(false);
+		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
+
+		$middleware = new FelkMiddleware($logger);
+
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(true);
+
+		$logger->shouldReceive('write')->with(Mockery::on(function ($arg) {
+			return $arg instanceof APIRequestEvent;
+		}), true)->once();
+
+		$this->assertTrue($middleware->terminate($request, $response));
+
+		putenv('APP_ENV');
+	}
+
+	public function testItWritesEventToLoggerWithForceSafeOff()
+	{
+		if (! defined('LARAVEL_START')) {
+			define('LARAVEL_START', microtime(true));
+		}
+
+		// Disable force_safe
+		$this->app['config']->set('felk', [
+			'elastic_search_hosts' => ['https://felk.com:443'],
+			'force_safe'           => false,
+			'enabled_environments' => [
+				'local',
+				'dev',
+				'staging',
+			],
+			'app_name'             => 'FooApp',
+		]);
+
+		$request  = Mockery::mock(Request::class);
+		$response = Mockery::mock(Response::class);
+		$logger   = Mockery::mock(ElasticSearchEngine::class);
+
+		$request_headers  = Mockery::mock(HeaderBag::class);
+		$request->headers = $request_headers;
+		$request_headers->shouldReceive('all')->once()->andReturn([
+			'req_foo' => ['bar'],
+			'req_baz' => ['bat'],
+		]);
+		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
+
+		$response_headers  = Mockery::mock(HeaderBag::class);
+		$response->headers = $response_headers;
+		$response_headers->shouldReceive('all')->once()->andReturn([
+			'res_foo' => ['bar'],
+			'res_baz' => ['bat'],
+		]);
+		$response_headers->shouldReceive('has')->with('X-Request-Id')->once()->andReturn(false);
+		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
+
+		$middleware = new FelkMiddleware($logger);
+
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(true);
+
+		$logger->shouldReceive('write')->with(Mockery::on(function ($arg) {
+			return $arg instanceof APIRequestEvent;
+		}), false)->once();
 
 		$this->assertTrue($middleware->terminate($request, $response));
 
@@ -110,11 +231,15 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 		$middleware = new FelkMiddleware($logger);
 
-		App::shouldReceive('environment')->with(['local', 'dev', 'staging'])->once()->andReturn(true);
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(true);
 
 		$logger->shouldReceive('write')->with(Mockery::on(function ($arg) {
 			return $arg instanceof APIRequestEvent && $arg->getRequestId() === 'fooRequestId';
-		}))->once();
+		}), true)->once();
 
 		$this->assertTrue($middleware->terminate($request, $response));
 
@@ -127,19 +252,24 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			define('LARAVEL_START', microtime(true));
 		}
 
-		$request  = Mockery::mock(Request::class);
-		$response = Mockery::mock(Response::class);
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$request           = Mockery::mock(Request::class);
+		$response          = Mockery::mock(Response::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 
 		$response_headers->shouldReceive('has')->with('X-Request-Id')->once()->andReturn(false);
-		$logger   = Mockery::mock(ElasticSearchEngine::class);
+		$logger = Mockery::mock(ElasticSearchEngine::class);
 
-		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn(FelkMiddleware::ELB_HEALTH_CHECKER_AGENT);
+		$request->shouldReceive('header')->with('User-Agent')->once()
+				->andReturn(FelkMiddleware::ELB_HEALTH_CHECKER_AGENT);
 
 		$middleware = new FelkMiddleware($logger);
 
-		App::shouldReceive('environment')->with(['local', 'dev', 'staging'])->once()->andReturn(true);
+		App::shouldReceive('environment')->with([
+			'local',
+			'dev',
+			'staging',
+		])->once()->andReturn(true);
 
 		$this->assertFalse($middleware->terminate($request, $response));
 

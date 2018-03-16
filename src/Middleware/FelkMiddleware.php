@@ -89,7 +89,7 @@ class FelkMiddleware
 
 			$event = APIRequestEvent::factory($request, $response, $response_time_ms, time(), $request_id);
 
-			$this->logger->write($event);
+			$this->logger->write($event, $config['force_safe'] ?? true);
 
 			return true;
 		} catch (\Exception $err) {
