@@ -59,7 +59,7 @@ class FelkEngineManager extends Manager
 	 *
 	 * @return NullEngine
 	 */
-	public function createNullDriver()
+	public function createNullEngineDriver()
 	{
 		return new NullEngine;
 	}
