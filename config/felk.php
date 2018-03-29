@@ -79,4 +79,21 @@ return [
 	*/
 
 	'prefix' => env('APP_NAME', 'define_my_felk_app_name'),
+
+	/*
+	|--------------------------------------------------------------------------
+	| Masks
+	|--------------------------------------------------------------------------
+	|
+	| Here you can specify the fields that should be masked before logging.
+	| Values are NOT case sensitive.
+	|
+	*/
+	'mask_headers' => ['authorization'],
+	'mask_input' => [
+		'password',
+		'password_confirmation',
+		'client_secret',
+		'access_token'
+	],
 ];

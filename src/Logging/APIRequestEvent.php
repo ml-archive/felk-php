@@ -4,7 +4,9 @@ namespace Fuzz\Felk\Logging;
 
 use Carbon\Carbon;
 use Fuzz\Felk\Contracts\LoggableEvent;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -362,6 +364,8 @@ class APIRequestEvent implements LoggableEvent
 	 * Get the instance as a safe array with sensitive data removed
 	 *
 	 * @return array
+	 *
+	 * @todo we should make toArray the default "safe" way to format the data, and instead make a toRawArray() which won't process the request/response.
 	 */
 	public function toSafeArray(): array
 	{
@@ -378,13 +382,87 @@ class APIRequestEvent implements LoggableEvent
 			'host'                       => $this->getRequest()->getHttpHost(),
 			'route'                      => $this->getRoute(),
 			'status_code'                => $this->getStatusCode(),
-			'request_headers'            => json_encode($request_headers),
+			'request_headers'            => json_encode($this->maskedRequestHeaders()),
+			'request_body'               => json_encode($this->maskedRequestContent()),
 			'response_headers'           => json_encode($this->getResponseHeaders()),
+			'response_body'              => $this->maskedResponseContent(),
 			'ip'                         => $this->getRequest()->ip(),
 			'scheme'                     => $this->getRequest()->getScheme(),
 			'port'                       => $this->getRequest()->getPort(),
 			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
 			'response_time_milliseconds' => $this->getResponseTime(),
 		];
+	}
+
+	/**
+	 * Mask sensitive data from the request headers and return it as an array.
+	 *
+	 * @return array
+	 */
+	private function maskedRequestHeaders(): array
+	{
+		return $this->mask($this->getRequestHeaders(), config('felk.mask_headers'));
+	}
+
+	/**
+	 * Mask sensitive data from the response headers and return it as an array.
+	 *
+	 * @return array
+	 */
+	private function maskedResponseHeaders(): array
+	{
+		return $this->mask($this->getResponseHeaders(), config('felk.mask_headers'));
+	}
+
+	/**
+	 * Mask sensitive data from the request content and return it as an array.
+	 *
+	 * @return array
+	 */
+	private function maskedRequestContent(): array
+	{
+		return $this->mask($this->getRequest()->all(), config('felk.mask_input'));
+	}
+
+	/**
+	 * Mask sensitive data from the response content and return it as a string.
+	 *
+	 * @return string
+	 *
+	 * @TODO this should be consistent with the return type of other masking functions.
+	 */
+	private function maskedResponseContent(): string
+	{
+		$content = $this->getResponse()->getContent();
+
+		if ($this->getResponse() instanceof JsonResponse) {
+			$content = $this->mask($this->getResponse()->getData(true), config('felk.mask_input'));
+
+			$content = json_encode($content, $this->getResponse()->getEncodingOptions());
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Run through an array and mask the values of any found keys.
+	 *
+	 * @param array  $array - The array to search for keys.
+	 * @param array  $keys - The keys to mask.
+	 * @param string $mask - The value to replace the keys with.
+	 *
+	 * @return array
+	 */
+	private function mask(array $array, array $keys, string $mask = 'MASKED')
+	{
+		$loweredKeysArr = array_change_key_case($array);
+
+		foreach ($keys as $key) {
+			if (array_key_exists(strtolower($key), $loweredKeysArr)) {
+				$array[$key] = $mask;
+			}
+		}
+
+		return $array;
 	}
 }
