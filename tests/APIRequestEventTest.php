@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Fuzz\Felk\Logging\APIRequestEvent;
 use Illuminate\Http\Request;
 use Mockery;
-use PHPUnit_Framework_TestCase;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,9 +15,9 @@ class APIRequestEventTest extends TestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$time = 604506;
+		$time     = 604506;
 
-		$request_headers = Mockery::mock(HeaderBag::class);
+		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
@@ -26,7 +25,7 @@ class APIRequestEventTest extends TestCase
 		]);
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
 
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
 			'res_foo' => ['bar'],
@@ -46,9 +45,9 @@ class APIRequestEventTest extends TestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$buffer = 100;
+		$buffer   = 100;
 
-		$request_headers = Mockery::mock(HeaderBag::class);
+		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
@@ -56,7 +55,7 @@ class APIRequestEventTest extends TestCase
 		]);
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
 
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
 			'res_foo' => ['bar'],
@@ -75,17 +74,18 @@ class APIRequestEventTest extends TestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$time = time();
+		$time     = time();
 
-		$request_headers = Mockery::mock(HeaderBag::class);
+		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
+		$request->shouldReceive('getMethod')->once()->andReturn('GET');
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
 
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
 			'res_foo' => ['bar'],
@@ -106,25 +106,25 @@ class APIRequestEventTest extends TestCase
 		$response->shouldReceive('getContent')->once()->andReturn('baz=foo&foo=bar');
 
 		$expect = [
-			'timestamp'        => Carbon::createFromTimestamp($time)->toIso8601String(),
-			'method'           => 'GET',
-			'host'             => 'https://felk.com',
-			'route'            => 'foo/bar?baz=bat',
-			'status_code'      => 200,
-			'request_headers'  => json_encode([
+			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
+			'method'                     => 'GET',
+			'host'                       => 'https://felk.com',
+			'route'                      => 'GET foo/bar?baz=bat',
+			'status_code'                => 200,
+			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
 				'req_baz' => ['bat'],
 			]),
-			'request_body'     => 'foo=bar&baz=foo',
-			'response_headers' => json_encode([
+			'request_body'               => 'foo=bar&baz=foo',
+			'response_headers'           => json_encode([
 				'res_foo' => ['bar'],
 				'res_baz' => ['bat'],
 			]),
-			'response_body'    => 'baz=foo&foo=bar',
-			'ip'               => '52.63.25.56',
-			'scheme'           => 'https',
-			'port'             => '80',
-			'environment'      => 'some_cool_test_env',
+			'response_body'              => 'baz=foo&foo=bar',
+			'ip'                         => '52.63.25.56',
+			'scheme'                     => 'https',
+			'port'                       => '80',
+			'environment'                => 'some_cool_test_env',
 			'response_time_milliseconds' => 250,
 		];
 
@@ -138,21 +138,24 @@ class APIRequestEventTest extends TestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$time = time();
+		$time     = time();
 
-		$request_headers = Mockery::mock(HeaderBag::class);
+		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
+			// Should be ignored
+			'authorization' => ['some_token'],
 		]);
+		$request->shouldReceive('getMethod')->once()->andReturn('GET');
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
 
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
-			'res_foo' => ['bar'],
-			'res_baz' => ['bat'],
+			'res_foo'       => ['bar'],
+			'res_baz'       => ['bat'],
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
@@ -169,23 +172,23 @@ class APIRequestEventTest extends TestCase
 		$response->shouldReceive('getContent')->never();
 
 		$expect = [
-			'timestamp'        => Carbon::createFromTimestamp($time)->toIso8601String(),
-			'method'           => 'GET',
-			'host'             => 'https://felk.com',
-			'route'            => 'foo/bar?baz=bat',
-			'status_code'      => 200,
-			'request_headers'  => json_encode([
+			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
+			'method'                     => 'GET',
+			'host'                       => 'https://felk.com',
+			'route'                      => 'GET foo/bar?baz=bat',
+			'status_code'                => 200,
+			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
 				'req_baz' => ['bat'],
 			]),
-			'response_headers' => json_encode([
+			'response_headers'           => json_encode([
 				'res_foo' => ['bar'],
 				'res_baz' => ['bat'],
 			]),
-			'ip'               => '52.63.25.56',
-			'scheme'           => 'https',
-			'port'             => '80',
-			'environment'      => 'some_cool_test_env',
+			'ip'                         => '52.63.25.56',
+			'scheme'                     => 'https',
+			'port'                       => '80',
+			'environment'                => 'some_cool_test_env',
 			'response_time_milliseconds' => 250,
 		];
 
@@ -199,17 +202,18 @@ class APIRequestEventTest extends TestCase
 	{
 		$request  = Mockery::mock(Request::class);
 		$response = Mockery::mock(Response::class);
-		$time = time();
+		$time     = time();
 
-		$request_headers = Mockery::mock(HeaderBag::class);
+		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
+		$request->shouldReceive('getMethod')->once()->andReturn('GET');
 		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
 
-		$response_headers = Mockery::mock(HeaderBag::class);
+		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
 			'res_foo' => ['bar'],
@@ -230,25 +234,25 @@ class APIRequestEventTest extends TestCase
 		$response->shouldReceive('getContent')->once()->andReturn('baz=foo&foo=bar');
 
 		$expect = json_encode([
-			'timestamp'        => Carbon::createFromTimestamp($time)->toIso8601String(),
-			'method'           => 'GET',
-			'host'             => 'https://felk.com',
-			'route'            => 'foo/bar?baz=bat',
-			'status_code'      => 200,
-			'request_headers'  => json_encode([
+			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
+			'method'                     => 'GET',
+			'host'                       => 'https://felk.com',
+			'route'                      => 'GET foo/bar?baz=bat',
+			'status_code'                => 200,
+			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
 				'req_baz' => ['bat'],
 			]),
-			'request_body'     => 'foo=bar&baz=foo',
-			'response_headers' => json_encode([
+			'request_body'               => 'foo=bar&baz=foo',
+			'response_headers'           => json_encode([
 				'res_foo' => ['bar'],
 				'res_baz' => ['bat'],
 			]),
-			'response_body'    => 'baz=foo&foo=bar',
-			'ip'               => '52.63.25.56',
-			'scheme'           => 'https',
-			'port'             => '80',
-			'environment'      => 'some_cool_test_env',
+			'response_body'              => 'baz=foo&foo=bar',
+			'ip'                         => '52.63.25.56',
+			'scheme'                     => 'https',
+			'port'                       => '80',
+			'environment'                => 'some_cool_test_env',
 			'response_time_milliseconds' => 270,
 		]);
 

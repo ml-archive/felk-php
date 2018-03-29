@@ -15,6 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
 class APIRequestEvent implements LoggableEvent
 {
 	/**
+	 * Headers to ignore in safe mode
+	 *
+	 * @const array
+	 */
+	const UNSAFE_HEADERS = ['authorization', 'Authorization'];
+
+	/**
 	 * Request storage
 	 *
 	 * @var \Illuminate\Http\Request
@@ -161,7 +168,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getRoute(): string
 	{
-		return $this->route;
+		return strtoupper($this->getRequest()->getMethod()) . ' ' .$this->route;
 	}
 
 	/**
@@ -359,13 +366,19 @@ class APIRequestEvent implements LoggableEvent
 	public function toSafeArray(): array
 	{
 		// We ignore the request/response to avoid having to redact potential PII
+		$request_headers = $this->getRequestHeaders();
+
+		foreach (self::UNSAFE_HEADERS as $header) {
+			unset($request_headers[$header]);
+		}
+
 		return [
 			'timestamp'                  => $this->getTime()->toIso8601String(),
 			'method'                     => $this->getRequest()->method(),
 			'host'                       => $this->getRequest()->getHttpHost(),
 			'route'                      => $this->getRoute(),
 			'status_code'                => $this->getStatusCode(),
-			'request_headers'            => json_encode($this->getRequestHeaders()),
+			'request_headers'            => json_encode($request_headers),
 			'response_headers'           => json_encode($this->getResponseHeaders()),
 			'ip'                         => $this->getRequest()->ip(),
 			'scheme'                     => $this->getRequest()->getScheme(),
