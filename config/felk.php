@@ -89,7 +89,9 @@ return [
 	| Values are NOT case sensitive.
 	|
 	*/
+
 	'mask_headers' => ['authorization'],
+
 	'mask_input' => [
 		'password',
 		'password_confirmation',
