@@ -19,7 +19,10 @@ class APIRequestEvent implements LoggableEvent
 	 *
 	 * @const array
 	 */
-	const UNSAFE_HEADERS = ['authorization', 'Authorization'];
+	const UNSAFE_HEADERS = [
+		'authorization',
+		'Authorization',
+	];
 
 	/**
 	 * Request storage
@@ -55,7 +58,7 @@ class APIRequestEvent implements LoggableEvent
 	 * @var array
 	 */
 	private $headers = [
-		'request' => [],
+		'request'  => [],
 		'response' => [],
 	];
 
@@ -65,6 +68,13 @@ class APIRequestEvent implements LoggableEvent
 	 * @var string
 	 */
 	private $route;
+
+	/**
+	 * Query storage
+	 *
+	 * @var string|null
+	 */
+	private $query;
 
 	/**
 	 * Carbon storage
@@ -95,10 +105,8 @@ class APIRequestEvent implements LoggableEvent
 	{
 		$event = new self;
 
-		$event = $event->setRequest($request)
-			->setResponse($response)
-			->setTime(is_null($time) ? time() : $time)
-			->setResponseTime($response_time_ms);
+		$event = $event->setRequest($request)->setResponse($response)->setTime(is_null($time) ? time() : $time)
+					   ->setResponseTime($response_time_ms);
 
 		if (! is_null($request_id)) {
 			$event->setRequestId($request_id);
@@ -126,10 +134,11 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function setRequest(Request $request): APIRequestEvent
 	{
-		$this->request = $request;
+		$this->request            = $request;
 		$this->headers['request'] = $request->headers->all();
 
-		$this->setRoute($request->getRequestUri());
+		$this->setRoute($request->getPathInfo());
+		$this->setQuery($request->getQueryString());
 
 		return $this;
 	}
@@ -153,7 +162,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function setResponse(Response $response): APIRequestEvent
 	{
-		$this->response = $response;
+		$this->response            = $response;
 		$this->headers['response'] = $response->headers->all();
 
 		$this->setStatusCode($response->getStatusCode());
@@ -168,7 +177,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getRoute(): string
 	{
-		return strtoupper($this->getRequest()->getMethod()) . ' ' .$this->route;
+		return strtoupper($this->getRequest()->getMethod()) . ' ' . $this->route;
 	}
 
 	/**
@@ -181,6 +190,30 @@ class APIRequestEvent implements LoggableEvent
 	public function setRoute(string $route): APIRequestEvent
 	{
 		$this->route = $route;
+
+		return $this;
+	}
+
+	/**
+	 * Get the Query
+	 *
+	 * @return string|null
+	 */
+	public function getQuery(): ?string
+	{
+		return $this->query;
+	}
+
+	/**
+	 * Set the Query
+	 *
+	 * @param string $query
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setQuery(?string $query): APIRequestEvent
+	{
+		$this->query = $query;
 
 		return $this;
 	}
@@ -323,6 +356,8 @@ class APIRequestEvent implements LoggableEvent
 			'method'                     => $this->getRequest()->method(),
 			'host'                       => $this->getRequest()->getHttpHost(),
 			'route'                      => $this->getRoute(),
+			'route_and_query'            => is_null($this->getQuery()) ? $this->getRoute() :
+				$this->getRoute() . '?' . $this->getQuery(),
 			'status_code'                => $this->getStatusCode(),
 			'request_headers'            => json_encode($this->getRequestHeaders()),
 			'request_body'               => $this->getRequest()->getContent(),
@@ -355,7 +390,8 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getUniqueId(): string
 	{
-		return is_null($this->request_id) ? hash('sha256', $this->getRoute() . round(microtime(true) * 1000)) : $this->request_id;
+		return is_null($this->request_id) ? hash('sha256', $this->getRoute() . round(microtime(true) * 1000)) :
+			$this->request_id;
 	}
 
 	/**
@@ -377,6 +413,8 @@ class APIRequestEvent implements LoggableEvent
 			'method'                     => $this->getRequest()->method(),
 			'host'                       => $this->getRequest()->getHttpHost(),
 			'route'                      => $this->getRoute(),
+			'route_and_query'            => is_null($this->getQuery()) ? $this->getRoute() :
+				$this->getRoute() . '?' . $this->getQuery(),
 			'status_code'                => $this->getStatusCode(),
 			'request_headers'            => json_encode($request_headers),
 			'response_headers'           => json_encode($this->getResponseHeaders()),

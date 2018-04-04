@@ -23,7 +23,8 @@ class APIRequestEventTest extends TestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
@@ -53,7 +54,8 @@ class APIRequestEventTest extends TestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
@@ -82,8 +84,9 @@ class APIRequestEventTest extends TestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getMethod')->once()->andReturn('GET');
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getMethod')->twice()->andReturn('GET');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
@@ -109,7 +112,8 @@ class APIRequestEventTest extends TestCase
 			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
 			'method'                     => 'GET',
 			'host'                       => 'https://felk.com',
-			'route'                      => 'GET foo/bar?baz=bat',
+			'route'                      => 'GET foo/bar',
+			'route_and_query'            => 'GET foo/bar?baz=bat',
 			'status_code'                => 200,
 			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
@@ -143,19 +147,20 @@ class APIRequestEventTest extends TestCase
 		$request_headers  = Mockery::mock(HeaderBag::class);
 		$request->headers = $request_headers;
 		$request_headers->shouldReceive('all')->once()->andReturn([
-			'req_foo' => ['bar'],
-			'req_baz' => ['bat'],
+			'req_foo'       => ['bar'],
+			'req_baz'       => ['bat'],
 			// Should be ignored
 			'authorization' => ['some_token'],
 		]);
-		$request->shouldReceive('getMethod')->once()->andReturn('GET');
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getMethod')->twice()->andReturn('GET');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
 		$response_headers->shouldReceive('all')->once()->andReturn([
-			'res_foo'       => ['bar'],
-			'res_baz'       => ['bat'],
+			'res_foo' => ['bar'],
+			'res_baz' => ['bat'],
 		]);
 		$response->shouldReceive('getStatusCode')->once()->andReturn(200);
 
@@ -175,7 +180,8 @@ class APIRequestEventTest extends TestCase
 			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
 			'method'                     => 'GET',
 			'host'                       => 'https://felk.com',
-			'route'                      => 'GET foo/bar?baz=bat',
+			'route'                      => 'GET foo/bar',
+			'route_and_query'            => 'GET foo/bar?baz=bat',
 			'status_code'                => 200,
 			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
@@ -210,8 +216,9 @@ class APIRequestEventTest extends TestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getMethod')->once()->andReturn('GET');
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getMethod')->twice()->andReturn('GET');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
 		$response->headers = $response_headers;
@@ -237,7 +244,8 @@ class APIRequestEventTest extends TestCase
 			'timestamp'                  => Carbon::createFromTimestamp($time)->toIso8601String(),
 			'method'                     => 'GET',
 			'host'                       => 'https://felk.com',
-			'route'                      => 'GET foo/bar?baz=bat',
+			'route'                      => 'GET foo/bar',
+			'route_and_query'            => 'GET foo/bar?baz=bat',
 			'status_code'                => 200,
 			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],

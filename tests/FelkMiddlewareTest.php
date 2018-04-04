@@ -58,7 +58,8 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
@@ -114,7 +115,8 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
@@ -171,7 +173,8 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
@@ -216,7 +219,8 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
 		]);
-		$request->shouldReceive('getRequestUri')->once()->andReturn('foo/bar?baz=bat');
+		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
+		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
 		$request->shouldReceive('header')->with('User-Agent')->once()->andReturn('Some User Agent');
 
 		$response_headers  = Mockery::mock(HeaderBag::class);
