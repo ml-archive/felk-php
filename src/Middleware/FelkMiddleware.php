@@ -7,7 +7,9 @@ use Fuzz\Felk\Contracts\Logger;
 use Fuzz\Felk\Facades\DBProfiler;
 use Fuzz\Felk\Logging\APIRequestEvent;
 use Fuzz\Felk\Logging\QueryProfiler;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -54,8 +56,14 @@ class FelkMiddleware
 	public function handle(Request $request, Closure $next)
 	{
 		if ($this->dbLogEnabled()) {
+			DB::enableQueryLog();
+
 			app()->singleton(DBProfiler::class, function () use ($request) {
 				return new QueryProfiler($request);
+			});
+
+			DB::listen(function (QueryExecuted $query) {
+				DBProfiler::addQueryEvent($query);
 			});
 		}
 

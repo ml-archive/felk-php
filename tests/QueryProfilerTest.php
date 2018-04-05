@@ -15,8 +15,6 @@ class QueryProfilerTest extends ApplicationTestCase
 	{
 		$request = Mockery::mock(Request::class);
 
-		DB::shouldReceive('enableQueryLog')->once();
-
 		$request->shouldReceive('getMethod')->once()->andReturn('GET');
 		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
 		$request->shouldReceive('getQueryString')->once()->andReturn('baz=bat');
@@ -64,8 +62,6 @@ class QueryProfilerTest extends ApplicationTestCase
 	public function testItCanAddQueryEventsAndSerializeThemSafe()
 	{
 		$request = Mockery::mock(Request::class);
-
-		DB::shouldReceive('enableQueryLog')->once();
 
 		$request->shouldReceive('getMethod')->once()->andReturn('GET');
 		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');

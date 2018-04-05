@@ -50,8 +50,6 @@ class QueryProfiler implements LoggableEvent
 	 */
 	public function __construct(Request $request)
 	{
-		DB::enableQueryLog();
-
 		$method      = strtoupper($request->getMethod());
 		$route       = $request->getPathInfo();
 		$this->query = $request->getQueryString();
