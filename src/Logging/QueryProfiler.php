@@ -96,7 +96,9 @@ class QueryProfiler implements LoggableEvent
 		return array_map(function (QueryExecuted $query) {
 			return [
 				'query'             => $query->sql,
-				'bindings'          => $query->bindings,
+				'bindings'          => array_map(function ($binding) {
+					return (string) $binding;
+				}, $query->bindings),
 				'time_milliseconds' => $query->time,
 			];
 		}, $this->queries);

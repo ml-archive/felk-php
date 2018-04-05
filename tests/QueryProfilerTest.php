@@ -2,6 +2,7 @@
 
 namespace Fuzz\Felk\Tests;
 
+use Carbon\Carbon;
 use Fuzz\Felk\Logging\QueryProfiler;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Events\QueryExecuted;
@@ -26,7 +27,7 @@ class QueryProfilerTest extends ApplicationTestCase
 
 		$profiler->addQueryEvent(new QueryExecuted('select * from foo', ['bar', 'baz'], 12.56, $connection));
 		$profiler->addQueryEvent(new QueryExecuted('select * from foo1', ['bar1', 'baz1'], 13.56, $connection));
-		$profiler->addQueryEvent(new QueryExecuted('select * from foo2', ['bar2', 'baz2'], 56.56, $connection));
+		$profiler->addQueryEvent(new QueryExecuted('select * from foo2', ['bar2', 'baz2', Carbon::yesterday()], 56.56, $connection));
 
 		$expect = [
 			'route'                         => 'GET foo/bar',
@@ -46,7 +47,7 @@ class QueryProfilerTest extends ApplicationTestCase
 				],
 				[
 					'query' => 'select * from foo2',
-					'bindings' => ['bar2', 'baz2'],
+					'bindings' => ['bar2', 'baz2', (string) Carbon::yesterday()],
 					'time_milliseconds' => 56.56,
 				],
 			],
