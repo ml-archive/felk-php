@@ -152,4 +152,14 @@ class QueryProfiler implements LoggableEvent
 	{
 		return 'db_profile';
 	}
+
+	/**
+	 * Get a loggable event from the query log
+	 *
+	 * @return \Fuzz\Felk\Contracts\LoggableEvent
+	 */
+	public function getLoggableEvent(): LoggableEvent
+	{
+		return $this;
+	}
 }
