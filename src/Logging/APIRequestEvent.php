@@ -425,4 +425,14 @@ class APIRequestEvent implements LoggableEvent
 			'response_time_milliseconds' => $this->getResponseTime(),
 		];
 	}
+
+	/**
+	 * The event type
+	 *
+	 * @return string
+	 */
+	public function getType(): string
+	{
+		return 'felk';
+	}
 }

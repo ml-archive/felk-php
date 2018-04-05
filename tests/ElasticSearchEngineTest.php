@@ -41,10 +41,11 @@ class ElasticSearchEngineTest extends TestCase
 		];
 		$event->shouldReceive('toArray')->once()->andReturn($body);
 		$event->shouldReceive('getUniqueId')->once()->andReturn('someUniqueId');
+		$event->shouldReceive('getType')->twice()->andReturn('felk');
 
 		$client->shouldReceive('index')->once()->with([
 			'index' => 'fooapp_felk',
-			'type'  => 'felk_log',
+			'type'  => 'felk',
 			'id'    => 'someUniqueId',
 			'body'  => $body,
 		])->andReturn(['success' => true]);
@@ -80,10 +81,11 @@ class ElasticSearchEngineTest extends TestCase
 		];
 		$event->shouldReceive('toSafeArray')->once()->andReturn($body);
 		$event->shouldReceive('getUniqueId')->once()->andReturn('someUniqueId');
+		$event->shouldReceive('getType')->twice()->andReturn('felk');
 
 		$client->shouldReceive('index')->once()->with([
 			'index' => 'fooapp_felk',
-			'type'  => 'felk_log',
+			'type'  => 'felk',
 			'id'    => 'someUniqueId',
 			'body'  => $body,
 		])->andReturn(['success' => true]);
@@ -119,10 +121,11 @@ class ElasticSearchEngineTest extends TestCase
 		];
 		$event->shouldReceive('toSafeArray')->once()->andReturn($body);
 		$event->shouldReceive('getUniqueId')->once()->andReturn('someUniqueId');
+		$event->shouldReceive('getType')->twice()->andReturn('felk');
 
 		$client->shouldReceive('index')->once()->with([
 			'index' => 'fooapp_felk',
-			'type'  => 'felk_log',
+			'type'  => 'felk',
 			'id'    => 'someUniqueId',
 			'body'  => $body,
 		])->andReturn(['success' => true]);

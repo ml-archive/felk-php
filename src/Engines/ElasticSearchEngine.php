@@ -14,13 +14,6 @@ use Fuzz\Felk\Contracts\Logger;
 class ElasticSearchEngine implements Logger
 {
 	/**
-	 * Document type
-	 *
-	 * @const string
-	 */
-	const TYPE = 'felk_log';
-
-	/**
 	 * ElasticSearch client storage
 	 *
 	 * @var \Elasticsearch\Client
@@ -35,13 +28,6 @@ class ElasticSearchEngine implements Logger
 	protected $prefix;
 
 	/**
-	 * Index
-	 *
-	 * @var string
-	 */
-	protected $index;
-
-	/**
 	 * ElasticSearchEngine constructor.
 	 *
 	 * @param Client $client
@@ -50,18 +36,7 @@ class ElasticSearchEngine implements Logger
 	public function __construct(Client $client, string $prefix)
 	{
 		$this->es     = $client;
-		$this->prefix = $prefix;
-		$this->index  = strtolower("{$this->prefix}_felk");
-	}
-
-	/**
-	 * Get the index to log to.
-	 *
-	 * @return string
-	 */
-	public function index()
-	{
-		return $this->index;
+		$this->prefix = strtolower($prefix);
 	}
 
 	/**
@@ -75,8 +50,8 @@ class ElasticSearchEngine implements Logger
 	public function write(LoggableEvent $event, bool $force_safe = true): array
 	{
 		$response = $this->es->index([
-			'index' => $this->index(),
-			'type'  => self::TYPE,
+			'index' => "{$this->prefix}_{$event->getType()}",
+			'type'  => $event->getType(),
 			'id'    => $event->getUniqueId(),
 			'body'  => $force_safe ? $event->toSafeArray() : $event->toArray(),
 		]);

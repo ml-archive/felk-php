@@ -39,7 +39,7 @@ class FelkMiddlewareTest extends ApplicationTestCase
 
 		$logger->shouldReceive('write')->never();
 
-		$this->assertFalse($middleware->terminate($request, $response));
+		$middleware->terminate($request, $response);
 	}
 
 	public function testItWritesEventToLogger()
@@ -275,11 +275,10 @@ class FelkMiddlewareTest extends ApplicationTestCase
 			'staging',
 		])->once()->andReturn(true);
 
-		$this->assertFalse($middleware->terminate($request, $response));
+		$middleware->terminate($request, $response);
 
 		putenv('APP_ENV');
 	}
-
 
 	/**
 	 * Define environment setup.
