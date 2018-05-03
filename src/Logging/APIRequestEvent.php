@@ -448,7 +448,7 @@ class APIRequestEvent implements LoggableEvent
 	{
 		foreach ($this->getRequestHeaders() as $key => $value) {
 			// Is a custom X header
-			if (Str::startsWith($key, 'X-')) {
+			if (Str::startsWith(strtolower($key), 'x-')) {
 				$data["custom_header_$key"] = is_array($value) ? $value[0] : $value;
 			}
 		}
