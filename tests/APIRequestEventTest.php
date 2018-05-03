@@ -83,6 +83,7 @@ class APIRequestEventTest extends TestCase
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo' => ['bar'],
 			'req_baz' => ['bat'],
+			'X-Foo-Header' => ['custom-value'],
 		]);
 		$request->shouldReceive('getMethod')->twice()->andReturn('GET');
 		$request->shouldReceive('getPathInfo')->once()->andReturn('foo/bar');
@@ -118,6 +119,7 @@ class APIRequestEventTest extends TestCase
 			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
 				'req_baz' => ['bat'],
+				'X-Foo-Header' => ['custom-value'],
 			]),
 			'request_body'               => 'foo=bar&baz=foo',
 			'response_headers'           => json_encode([
@@ -130,6 +132,7 @@ class APIRequestEventTest extends TestCase
 			'port'                       => '80',
 			'environment'                => 'some_cool_test_env',
 			'response_time_milliseconds' => 250,
+			'custom_header_X-Foo-Header' => 'custom-value',
 		];
 
 		$this->assertSame($expect, $event->toArray());
@@ -149,6 +152,7 @@ class APIRequestEventTest extends TestCase
 		$request_headers->shouldReceive('all')->once()->andReturn([
 			'req_foo'       => ['bar'],
 			'req_baz'       => ['bat'],
+			'X-Foo-Header' => ['custom-value'],
 			// Should be ignored
 			'authorization' => ['some_token'],
 		]);
@@ -186,6 +190,7 @@ class APIRequestEventTest extends TestCase
 			'request_headers'            => json_encode([
 				'req_foo' => ['bar'],
 				'req_baz' => ['bat'],
+				'X-Foo-Header' => ['custom-value'],
 			]),
 			'response_headers'           => json_encode([
 				'res_foo' => ['bar'],
@@ -196,6 +201,7 @@ class APIRequestEventTest extends TestCase
 			'port'                       => '80',
 			'environment'                => 'some_cool_test_env',
 			'response_time_milliseconds' => 250,
+			'custom_header_X-Foo-Header' => 'custom-value',
 		];
 
 		$this->assertSame($expect, $event->toSafeArray());

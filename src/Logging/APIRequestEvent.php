@@ -5,6 +5,7 @@ namespace Fuzz\Felk\Logging;
 use Carbon\Carbon;
 use Fuzz\Felk\Contracts\LoggableEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -351,7 +352,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function toArray()
 	{
-		return [
+		return $this->mergeCustomHeaders([
 			'timestamp'                  => $this->getTime()->toIso8601String(),
 			'method'                     => $this->getRequest()->method(),
 			'host'                       => $this->getRequest()->getHttpHost(),
@@ -368,7 +369,7 @@ class APIRequestEvent implements LoggableEvent
 			'port'                       => $this->getRequest()->getPort(),
 			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
 			'response_time_milliseconds' => $this->getResponseTime(),
-		];
+		]);
 	}
 
 	/**
@@ -408,7 +409,7 @@ class APIRequestEvent implements LoggableEvent
 			unset($request_headers[$header]);
 		}
 
-		return [
+		return $this->mergeCustomHeaders([
 			'timestamp'                  => $this->getTime()->toIso8601String(),
 			'method'                     => $this->getRequest()->method(),
 			'host'                       => $this->getRequest()->getHttpHost(),
@@ -423,7 +424,7 @@ class APIRequestEvent implements LoggableEvent
 			'port'                       => $this->getRequest()->getPort(),
 			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
 			'response_time_milliseconds' => $this->getResponseTime(),
-		];
+		]);
 	}
 
 	/**
@@ -434,5 +435,24 @@ class APIRequestEvent implements LoggableEvent
 	public function getType(): string
 	{
 		return 'felk';
+	}
+
+	/**
+	 * Merge custom X- headers into the array body
+	 *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function mergeCustomHeaders(array $data): array
+	{
+		foreach ($this->getRequestHeaders() as $key => $value) {
+			// Is a custom X header
+			if (Str::startsWith($key, 'X-')) {
+				$data["custom_header_$key"] = is_array($value) ? $value[0] : $value;
+			}
+		}
+
+		return $data;
 	}
 }
