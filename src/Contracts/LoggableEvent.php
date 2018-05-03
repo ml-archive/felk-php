@@ -22,9 +22,23 @@ interface LoggableEvent extends Jsonable, Arrayable
 	const DEFAULT_ENVIRONMENT = 'no_env_configured';
 
 	/**
+	 * The event type
+	 *
+	 * @return string
+	 */
+	public function getType(): string;
+
+	/**
 	 * Generate a unique ID for this event
 	 *
 	 * @return string
 	 */
 	public function getUniqueId(): string;
+
+	/**
+	 * Get the instance as a safe array with sensitive data removed
+	 *
+	 * @return array
+	 */
+	public function toSafeArray(): array;
 }

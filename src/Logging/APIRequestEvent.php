@@ -5,6 +5,7 @@ namespace Fuzz\Felk\Logging;
 use Carbon\Carbon;
 use Fuzz\Felk\Contracts\LoggableEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -14,6 +15,16 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class APIRequestEvent implements LoggableEvent
 {
+	/**
+	 * Headers to ignore in safe mode
+	 *
+	 * @const array
+	 */
+	const UNSAFE_HEADERS = [
+		'authorization',
+		'Authorization',
+	];
+
 	/**
 	 * Request storage
 	 *
@@ -36,12 +47,19 @@ class APIRequestEvent implements LoggableEvent
 	private $status_code;
 
 	/**
+	 * Response time in milliseconds
+	 *
+	 * @var int
+	 */
+	private $response_time_ms;
+
+	/**
 	 * Headers storage
 	 *
 	 * @var array
 	 */
 	private $headers = [
-		'request' => [],
+		'request'  => [],
 		'response' => [],
 	];
 
@@ -53,6 +71,13 @@ class APIRequestEvent implements LoggableEvent
 	private $route;
 
 	/**
+	 * Query storage
+	 *
+	 * @var string|null
+	 */
+	private $query;
+
+	/**
 	 * Carbon storage
 	 *
 	 * @var \Carbon\Carbon
@@ -60,21 +85,35 @@ class APIRequestEvent implements LoggableEvent
 	private $timestamp;
 
 	/**
+	 * Request ID storage
+	 *
+	 * @var string|null
+	 */
+	private $request_id = null;
+
+	/**
 	 * Build a new APIRequestEvent
 	 *
 	 * @param \Illuminate\Http\Request                   $request
 	 * @param \Symfony\Component\HttpFoundation\Response $response
+	 * @param int                                        $response_time_ms
 	 * @param int|null                                   $time
+	 * @param string                                     $request_id
 	 *
 	 * @return \Fuzz\Felk\Logging\APIRequestEvent
 	 */
-	public static function factory(Request $request, Response $response, int $time = null): APIRequestEvent
+	public static function factory(Request $request, Response $response, int $response_time_ms = 0, int $time = null, string $request_id = null): APIRequestEvent
 	{
 		$event = new self;
 
-		return $event->setRequest($request)
-			->setResponse($response)
-			->setTime(is_null($time) ? time() : $time);
+		$event = $event->setRequest($request)->setResponse($response)->setTime(is_null($time) ? time() : $time)
+					   ->setResponseTime($response_time_ms);
+
+		if (! is_null($request_id)) {
+			$event->setRequestId($request_id);
+		}
+
+		return $event;
 	}
 
 	/**
@@ -96,10 +135,11 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function setRequest(Request $request): APIRequestEvent
 	{
-		$this->request = $request;
+		$this->request            = $request;
 		$this->headers['request'] = $request->headers->all();
 
-		$this->setRoute($request->getRequestUri());
+		$this->setRoute($request->getPathInfo());
+		$this->setQuery($request->getQueryString());
 
 		return $this;
 	}
@@ -123,7 +163,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function setResponse(Response $response): APIRequestEvent
 	{
-		$this->response = $response;
+		$this->response            = $response;
 		$this->headers['response'] = $response->headers->all();
 
 		$this->setStatusCode($response->getStatusCode());
@@ -138,7 +178,7 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getRoute(): string
 	{
-		return $this->route;
+		return strtoupper($this->getRequest()->getMethod()) . ' ' . $this->route;
 	}
 
 	/**
@@ -151,6 +191,54 @@ class APIRequestEvent implements LoggableEvent
 	public function setRoute(string $route): APIRequestEvent
 	{
 		$this->route = $route;
+
+		return $this;
+	}
+
+	/**
+	 * Get the Query
+	 *
+	 * @return string|null
+	 */
+	public function getQuery(): ?string
+	{
+		return $this->query;
+	}
+
+	/**
+	 * Set the Query
+	 *
+	 * @param string $query
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setQuery(?string $query): APIRequestEvent
+	{
+		$this->query = $query;
+
+		return $this;
+	}
+
+	/**
+	 * Get the RequestID
+	 *
+	 * @return string
+	 */
+	public function getRequestId(): string
+	{
+		return $this->request_id;
+	}
+
+	/**
+	 * Set the RequestID
+	 *
+	 * @param string $request_id
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setRequestId(string $request_id): APIRequestEvent
+	{
+		$this->request_id = $request_id;
 
 		return $this;
 	}
@@ -234,27 +322,54 @@ class APIRequestEvent implements LoggableEvent
 	}
 
 	/**
+	 * Set the response time
+	 *
+	 * @param int $response_time_ms
+	 *
+	 * @return \Fuzz\Felk\Logging\APIRequestEvent
+	 */
+	public function setResponseTime(int $response_time_ms): APIRequestEvent
+	{
+		$this->response_time_ms = $response_time_ms;
+
+		return $this;
+	}
+
+	/**
+	 * Get the response time
+	 *
+	 * @return int
+	 */
+	public function getResponseTime(): int
+	{
+		return $this->response_time_ms;
+	}
+
+	/**
 	 * Get the instance as an array.
 	 *
 	 * @return array
 	 */
 	public function toArray()
 	{
-		return [
-			'timestamp'        => $this->getTime()->toIso8601String(),
-			'method'           => $this->getRequest()->method(),
-			'host'             => $this->getRequest()->getHttpHost(),
-			'route'            => $this->getRoute(),
-			'status_code'      => $this->getStatusCode(),
-			'request_headers'  => json_encode($this->getRequestHeaders()),
-			'request_body'     => $this->getRequest()->getContent(),
-			'response_headers' => json_encode($this->getResponseHeaders()),
-			'response_body'    => $this->getResponse()->getContent(),
-			'ip'               => $this->getRequest()->ip(),
-			'scheme'           => $this->getRequest()->getScheme(),
-			'port'             => $this->getRequest()->getPort(),
-			'environment'      => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
-		];
+		return $this->mergeCustomHeaders([
+			'timestamp'                  => $this->getTime()->toIso8601String(),
+			'method'                     => $this->getRequest()->method(),
+			'host'                       => $this->getRequest()->getHttpHost(),
+			'route'                      => $this->getRoute(),
+			'route_and_query'            => is_null($this->getQuery()) ? $this->getRoute() :
+				$this->getRoute() . '?' . $this->getQuery(),
+			'status_code'                => $this->getStatusCode(),
+			'request_headers'            => json_encode($this->getRequestHeaders()),
+			'request_body'               => $this->getRequest()->getContent(),
+			'response_headers'           => json_encode($this->getResponseHeaders()),
+			'response_body'              => $this->getResponse()->getContent(),
+			'ip'                         => $this->getRequest()->ip(),
+			'scheme'                     => $this->getRequest()->getScheme(),
+			'port'                       => $this->getRequest()->getPort(),
+			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
+			'response_time_milliseconds' => $this->getResponseTime(),
+		]);
 	}
 
 	/**
@@ -276,6 +391,68 @@ class APIRequestEvent implements LoggableEvent
 	 */
 	public function getUniqueId(): string
 	{
-		return hash('sha256', $this->getRoute() . round(microtime(true) * 1000));
+		return is_null($this->request_id) ? hash('sha256', $this->getRoute() . round(microtime(true) * 1000)) :
+			$this->request_id;
+	}
+
+	/**
+	 * Get the instance as a safe array with sensitive data removed
+	 *
+	 * @return array
+	 */
+	public function toSafeArray(): array
+	{
+		// We ignore the request/response to avoid having to redact potential PII
+		$request_headers = $this->getRequestHeaders();
+
+		foreach (self::UNSAFE_HEADERS as $header) {
+			unset($request_headers[$header]);
+		}
+
+		return $this->mergeCustomHeaders([
+			'timestamp'                  => $this->getTime()->toIso8601String(),
+			'method'                     => $this->getRequest()->method(),
+			'host'                       => $this->getRequest()->getHttpHost(),
+			'route'                      => $this->getRoute(),
+			'route_and_query'            => is_null($this->getQuery()) ? $this->getRoute() :
+				$this->getRoute() . '?' . $this->getQuery(),
+			'status_code'                => $this->getStatusCode(),
+			'request_headers'            => json_encode($request_headers),
+			'response_headers'           => json_encode($this->getResponseHeaders()),
+			'ip'                         => $this->getRequest()->ip(),
+			'scheme'                     => $this->getRequest()->getScheme(),
+			'port'                       => $this->getRequest()->getPort(),
+			'environment'                => getenv('APP_ENV') ?? LoggableEvent::DEFAULT_ENVIRONMENT,
+			'response_time_milliseconds' => $this->getResponseTime(),
+		]);
+	}
+
+	/**
+	 * The event type
+	 *
+	 * @return string
+	 */
+	public function getType(): string
+	{
+		return 'felk';
+	}
+
+	/**
+	 * Merge custom X- headers into the array body
+	 *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function mergeCustomHeaders(array $data): array
+	{
+		foreach ($this->getRequestHeaders() as $key => $value) {
+			// Is a custom X header
+			if (Str::startsWith(strtolower($key), 'x-')) {
+				$data["custom_header_$key"] = is_array($value) ? $value[0] : $value;
+			}
+		}
+
+		return $data;
 	}
 }

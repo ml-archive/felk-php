@@ -2,10 +2,8 @@
 
 namespace Fuzz\Felk\Providers;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\ServiceProvider;
 use Fuzz\Felk\Contracts\Logger;
-use Fuzz\Felk\Logging\ElasticSearchLogger;
+use Illuminate\Support\ServiceProvider;
 
 class FelkServiceProvider extends ServiceProvider
 {
@@ -21,6 +19,7 @@ class FelkServiceProvider extends ServiceProvider
 			$config_file => config_path('felk.php'),
 		]);
 	}
+
 	/**
 	 * Register the service provider.
 	 *
@@ -28,13 +27,18 @@ class FelkServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$config = config('felk');
+		$this->app->singleton(FelkEngineManager::class, function ($app) {
+			return new FelkEngineManager($app);
+		});
 
-		$this->app->singleton(Logger::class, function() use ($config) {
-			return ElasticSearchLogger::factory(
-				$config['elastic_search_hosts'],
-				$config['app_name']
-			);
+		$this->app->singleton(Logger::class, function ($app) {
+			// First, we will create the Felk manager which is responsible for the
+			// creation of the various felk drivers when they are needed by the
+			// application instance, and will resolve them on a lazy load basis.
+			/** @var FelkEngineManager $manager */
+			$manager = $app[FelkEngineManager::class];
+
+			return $manager->driver();
 		});
 	}
 }
